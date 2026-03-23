@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iStore</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body class="text-gray-900" x-data="{
+  categories: iphoneData,
+  selectedSeries: 'iPhone 17 Series',
+  isModalOpen: false,
+  selectedProduct: {},
+  currentImageIndex: 0,
+  selectedColorImage: ''
+}">
+
+  <nav class="sticky top-0 z-50 glass-card p-4 flex justify-between items-center px-10">
+    <h1 class="text-xl font-bold tracking-tight">iStore</h1>
+    <div class="space-x-6 text-sm font-medium">
+      <a href="#" class="hover:text-blue-500 transition">Store</a>
+      <a href="#" class="hover:text-blue-500 transition">Compare</a>
+      <a href="#" class="bg-black text-white px-4 py-2 rounded-full">Buy Now</a>
+    </div>
+  </nav>
+
+  <main class="max-w-6xl mx-auto py-16 px-6" x-data="{
+        categories: iphoneData,
+        selectedSeries: 'iPhone 17 Series'
+    }">
+    <header class="text-center mb-16">
+      <h2 class="text-5xl font-extrabold mb-4">Choose your iPhone.</h2>
+      <p class="text-xl text-gray-500">Explore the best personal devices in our store.</p>
+    </header>
+
+    <div class="flex justify-center space-x-4 mb-12">
+      <template x-for="item in categories">
+        <button @click="selectedSeries = item.series"
+          :class="selectedSeries === item.series ? 'bg-black text-white' : 'bg-white text-gray-600 border'"
+          class="px-6 py-2 rounded-full transition-all duration-300 font-semibold" x-text="item.series">
+        </button>
+      </template>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <template x-for="series in categories">
+        <template x-if="selectedSeries === series.series">
+          <template x-for="model in series.models">
+            <div class="glass-card rounded-3xl p-8 hover:shadow-2xl transition-shadow duration-500">
+              <div class="h-48 bg-gray-200 rounded-2xl mb-6 flex items-center justify-center italic text-gray-400">
+                <div class="h-48 rounded-2xl mb-6 flex items-center justify-center overflow-hidden bg-gray-50">
+                  <img :src="model.image" :alt="model.name"
+                    class="object-contain h-full w-full hover:scale-105 transition-transform duration-500">
+                </div>
+              </div>
+              <h3 class="text-2xl font-bold mb-2" x-text="model.name"></h3>
+              <p class="text-gray-500 mb-6" x-text="model.specs"></p>
+              <div class="flex justify-between items-center">
+                <span class="text-lg font-semibold" x-text="model.price"></span>
+                <button @click="
+                selectedProduct = model;
+                selectedColorImage = (model.colors && model.colors.length > 0) ? model.colors[0].image : model.image;
+                isModalOpen = true;" class="text-blue-500 font-medium hover:underline"><ins>Learn more</ins></button>
+              </div>
+          </template>
+        </template>
+      </template>
+    </div>
+  </main>
+  <div x-show="isModalOpen" class="fixed inset-0 z-[100] overflow-y-auto" x-cloak>
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="isModalOpen = false"></div>
+
+    <div class="relative min-h-screen flex items-center justify-center p-4">
+      <div
+        class="relative bg-white w-full max-w-4xl rounded-[32px] shadow-2xl overflow-hidden flex flex-col md:flex-row"
+        @click.stop>
+
+        <button @click="isModalOpen = false" class="absolute top-6 right-6 text-gray-400 hover:text-black z-10">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <div class="md:w-1/2 bg-gray-50 p-8 flex flex-col items-center justify-center">
+          <div class="h-80 w-full flex items-center justify-center mb-8">
+            <img :src="selectedColorImage" class="max-h-full object-contain transition-all duration-500 ease-in-out">
+          </div>
+
+          <div class="flex space-x-4 items-center">
+            <span class="text-xs font-bold uppercase text-gray-400">Finish:</span>
+            <template x-for="color in (selectedProduct.colors || [])" :key="color.name">
+              <div @click="selectedColorImage = color.image"
+                class="w-10 h-10 rounded-full cursor-pointer border-2 transition-transform hover:scale-110 shadow-inner"
+                :class="selectedColorImage === color.image ? 'border-blue-500 scale-110' : 'border-gray-200'"
+                :style="'background-color:' + (color.hex || color.name.toLowerCase())" :title="color.name">
+              </div>
+            </template>
+          </div>
+
+          <p class="mt-4 text-sm font-medium text-gray-500"
+            x-text="'Color: ' + (selectedProduct.colors?.find(c => c.image === selectedColorImage)?.name || '')">
+          </p>
+        </div>
+        <div class="md:w-1/2 p-10">
+          <span class="text-orange-500 font-bold text-sm uppercase tracking-widest">New</span>
+          <h2 class="text-4xl font-bold mt-2 mb-4" x-text="selectedProduct.name"></h2>
+          <p class="text-2xl font-semibold mb-6" x-text="selectedProduct.price"></p>
+
+          <div class="space-y-4 mb-8">
+            <div class="flex items-center">
+              <span class="w-24 text-gray-400 text-sm">Storage</span>
+              <span class="font-medium" x-text="selectedProduct.storage"></span>
+            </div>
+            <div class="flex items-center">
+              <span class="w-24 text-gray-400 text-sm">Camera</span>
+              <span class="font-medium" x-text="selectedProduct.camera"></span>
+            </div>
+            <div class="flex items-center">
+              <span class="w-24 text-gray-400 text-sm">Battery</span>
+              <span class="font-medium" x-text="selectedProduct.battery"></span>
+            </div>
+          </div>
+
+          <p class="text-gray-600 leading-relaxed mb-8">
+            The most advanced iPhone yet, featuring a stunning design and the incredible power of the Apple-designed
+            chip.
+            Experience photography like never before with the <span x-text="selectedProduct.camera"></span>.
+          </p>
+
+          <button
+            class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition">Add
+            to
+            Cart
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+
+</html>
+index.html
